@@ -1,8 +1,5 @@
 package table;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 public class RowData {
 //"sursa", "destinatia", "numele fisierului", "progresul", "starea"};
 	private String source;

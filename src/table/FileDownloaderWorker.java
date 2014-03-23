@@ -15,7 +15,6 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	
 	@Override
 	protected Integer doInBackground() throws Exception {
-		// TODO Auto-generated method stub
 		System.out.println("Crt th" + Thread.currentThread());
 		  
 		  // TODO 3.2
