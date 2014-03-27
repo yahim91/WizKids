@@ -16,7 +16,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import StatusBar.StatusBar;
+import statusbar.StatusBar;
 import table.ProgressCellRender;
 import table.ProgressTableModel;
 
@@ -29,14 +29,14 @@ public class Main extends JFrame {
 	private final JTable jt;
 	private final JLabel statusLabel;
 	
-	private final Mediator med;
+	private final IMediator med;
 	
-	public Main() {
+	public Main(final IMediator med) {
 		
 		super("IDP Project");
 
 		// init mediator
-		med = new Mediator();
+		this.med = med;
 		
 		// init frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // exit application when window is closed
@@ -46,7 +46,7 @@ public class Main extends JFrame {
 		this.setVisible(true);
 		
 		// init table
-		ProgressTableModel ptm = new ProgressTableModel(med);
+		ProgressTableModel ptm = new ProgressTableModel(this.med);
 		jt = new JTable(ptm);
 		jt.getColumn("Progress").setCellRenderer(new ProgressCellRender());
 		jt.setShowGrid(false);
@@ -56,7 +56,7 @@ public class Main extends JFrame {
 		
         // init status bar
         statusLabel = new JLabel("Initialized ...", SwingConstants.LEFT);
-        new StatusBar(statusLabel, med);
+        new StatusBar(statusLabel, this.med);
         
         // create jPanel containing the table and the status bar
 	    JPanel ts = new JPanel();
@@ -76,7 +76,7 @@ public class Main extends JFrame {
 				// TODO Auto-generated method stub
 				if (e.getValueIsAdjusting()){
 					int index = jusers.getSelectedIndex();
-					med.considerUser(index);
+					med.considerUser(jusers.getSelectedValue());
 				}
 			}
 		});
@@ -111,12 +111,16 @@ public class Main extends JFrame {
 		// add everything to frame
 		this.getContentPane().add(splitPane);
 	}
+	
+	public IMediator getMediator() {
+		return med;
+	}
 
 	static public void main(String[] argv) {
 		// run on EDT (event-dispatching thread), not on main thread!
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				new Main();
+				new Main(new Mediator());
 			}
 		});
 	}

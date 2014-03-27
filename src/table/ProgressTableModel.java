@@ -5,16 +5,16 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import app.Mediator;
+import app.IMediator;
 
 public class ProgressTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -1440410634037827179L;
 
 	private List<RowData> rows;
-	private Mediator med;
+	private IMediator med;
 	
-	public ProgressTableModel(Mediator med) {
+	public ProgressTableModel(IMediator med) {
         rows = new ArrayList<>(100);
         
         this.med = med;

@@ -1,17 +1,17 @@
-package StatusBar;
+package statusbar;
 
 import javax.swing.JLabel;
 
-import app.Mediator;
+import app.IMediator;
 
 public class StatusBar {
 	
 	int started;
 	int finished;
 	JLabel label;
-	Mediator med;
+	IMediator med;
 	
-	public StatusBar(JLabel label, Mediator med) {
+	public StatusBar(JLabel label, IMediator med) {
 		started = 0;
 		finished = 0;
 		this.label = label;

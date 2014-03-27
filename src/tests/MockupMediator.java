@@ -1,4 +1,5 @@
-package app;
+package tests;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -12,17 +13,16 @@ import statusbar.StatusBar;
 import table.ProgressTableModel;
 import table.RowData;
 import worker.FileDownloaderWorker;
+import app.IMediator;
+import app.UserFiles;
 
+public class MockupMediator implements IMediator {
 
-public class Mediator implements IMediator {
-
-	DefaultListModel<UserFiles> uf;
-	DefaultListModel<String> files;
-	ProgressTableModel tm;
-	StatusBar sb;
-	
-	public Mediator() {
-	}
+	private DefaultListModel<UserFiles> uf;
+	private DefaultListModel<String> files;
+	private ProgressTableModel tm;
+	private StatusBar sb;
+	private static int userid;
 	
 	@Override
 	public void registerStatusBar(StatusBar sb) {
@@ -34,15 +34,17 @@ public class Mediator implements IMediator {
 		this.tm = tm;
 	}
 
+	@Override
 	public void registerUserListModel(DefaultListModel<UserFiles> uf) {
 		this.uf = uf;
 	}
 
+	@Override
 	public void registerFilesModel(DefaultListModel<String> files) {
 		this.files = files;
 	}
 	
-	
+	@Override
 	public void considerUser(UserFiles uf) {
 		ArrayList<String> files_i = uf.getFiles();
 		files.removeAllElements();
@@ -51,15 +53,40 @@ public class Mediator implements IMediator {
 			files.addElement(fl);
 	}
 	
+	@Override
 	public void considerFile(int indexU, int indexF) {
+		String fileName = files.get(indexF);
+		String user = uf.get(indexU).getName();
 		
+		tm.addRow(new RowData(user, "_me", fileName));
+		final int index = tm.getRowCount() - 1;
+		MockupFileDownloader bgTh = new MockupFileDownloader();
+		
+		sb.incStarted();
+		
+		bgTh.addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				
+				if (evt.getPropertyName().equals("progress")) {
+					tm.updateStatus(index, (Integer)evt.getNewValue());
+				
+					if ((Integer)evt.getNewValue() == 100) // download complete
+						sb.incFinished();
+				}
+			}
+		});
+		bgTh.execute();
 	}
 
 	@Override
 	public void addUser(String name, ArrayList<String> files) {
-		uf.addElement(new UserFiles(name, files, this));
+		UserFiles new_entry = new UserFiles(name, files, this);
+		new_entry.setId(userid++);
+		uf.addElement(new_entry);
 	}
-
+	
 	@Override
 	public void updateUserFiles(Integer id, ArrayList<String> files) {
 		Enumeration<UserFiles> uf_enum = uf.elements();
