@@ -1,0 +1,27 @@
+Tema 1 IDP
+
+Echipa WizKids
+Mihai Ciocan 342C3
+Racec Emil 341C3
+
+In implementarea temei am urmat design pattern-ul Mediator. Componentele care se cupleaza la obiectul
+Mediator sunt GUI - Main, table-ul care afiseaza informatii despre transferuri si statusbar-ul ce 
+afiseaza informatii despre transferuri in format text in partea de jos a aplicatiei (in dezvoltarea
+aplicatiei vor mai aparea noi componente).
+
+Graphical User Interface
+
+Interfata grafica este formata din 3 panel-uri: 
+	- lista cu utilizatori in partea dreapta;
+	- panel in dreapta care e impartit in:
+		- lista cu fisiere ce apartin utilizator-ului selectat(din partea dreapta);
+		- table cu informatii despre transferuri(sursa, destinatie, nume fisier, progress, status);
+		
+Testing
+Pentru testare am realizat:
+	- junit tests pentru testare citirii fisierului de configurare (pe parcursul dezvoltarii 
+	vor mai fi adaugate teste)
+	- TestGUI pentru testare interfata grafica folosind un mockup mediator ce simuleaza un mediator
+	complet implementat: updateaza grafica la transfer simulat, introduce noi evenimente de adaugare 
+	utilizator, sau update pentru lista de fisiere a unui utilizator 
+	 

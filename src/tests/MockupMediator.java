@@ -13,6 +13,7 @@ import statusbar.StatusBar;
 import table.ProgressTableModel;
 import table.RowData;
 import worker.FileDownloaderWorker;
+import app.Config;
 import app.IMediator;
 import app.UserFiles;
 
@@ -23,6 +24,12 @@ public class MockupMediator implements IMediator {
 	private ProgressTableModel tm;
 	private StatusBar sb;
 	private static int userid;
+	private Config config;
+	
+	public MockupMediator() {
+		config = new Config();
+		config.readConfigFile();
+	}
 	
 	@Override
 	public void registerStatusBar(StatusBar sb) {
@@ -98,4 +105,11 @@ public class MockupMediator implements IMediator {
 			}
 		}
 	}
+
+	@Override
+	public Config getConfig() {
+		return config;
+	}
+	
+	
 }

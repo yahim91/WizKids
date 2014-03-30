@@ -1,17 +1,11 @@
 package app;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 
 import statusbar.StatusBar;
 import table.ProgressTableModel;
-import table.RowData;
-import worker.FileDownloaderWorker;
 
 
 public class Mediator implements IMediator {
@@ -20,8 +14,11 @@ public class Mediator implements IMediator {
 	DefaultListModel<String> files;
 	ProgressTableModel tm;
 	StatusBar sb;
+	Config config;
 	
 	public Mediator() {
+		config = new Config();
+		config.readConfigFile();
 	}
 	
 	@Override
@@ -70,5 +67,10 @@ public class Mediator implements IMediator {
 				break;
 			}
 		}
+	}
+
+	@Override
+	public Config getConfig() {
+		return config;
 	}
 }

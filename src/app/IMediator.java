@@ -17,4 +17,5 @@ public interface IMediator {
 	public void considerFile(int indexU, int indexF);
 	public void addUser(String name, ArrayList<String> files);
 	public void updateUserFiles(Integer id, ArrayList<String> files);
+	public Config getConfig();
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="IDP_Project">
+	<property name="ECLIPSE_HOME" value="../../eclipse" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+	<property name="junit.output.dir" value="junit" />
+	<path id="JUnit 4.libraryclasspath">
+		<pathelement location="${ECLIPSE_HOME}/plugins/org.junit_4.11.0.v201303080030/junit.jar" />
+		<pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.3.0.v201303031735.jar" />
+	</path>
+	<path id="IDP_Project.classpath">
+		<pathelement location="bin" />
+		<path refid="JUnit 4.libraryclasspath" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+	</target>
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+	<target depends="init" name="build">
+		<javac debug="true" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+			<src path="src" />
+			<classpath refid="IDP_Project.classpath" />
+		</javac>
+	</target>
+
+	<target name="Main">
+		<java classname="app.Main" failonerror="true" fork="yes">
+			<classpath refid="IDP_Project.classpath" />
+		</java>
+	</target>
+	<target name="TestGUI">
+		<java classname="tests.TestGUI" failonerror="true" fork="yes">
+			<classpath refid="IDP_Project.classpath" />
+		</java>
+	</target>
+
+	<target name="TestApp">
+		<mkdir dir="${junit.output.dir}" />
+		<junit fork="yes" printsummary="withOutAndErr">
+			<formatter type="xml" />
+			<test name="tests.TestApp" todir="${junit.output.dir}" />
+			<classpath refid="IDP_Project.classpath" />
+		</junit>
+	</target>
+</project>
