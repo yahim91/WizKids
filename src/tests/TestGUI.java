@@ -13,7 +13,7 @@ public class TestGUI {
 	static public void main(String[] argv) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				final Main main = new Main(new MockupMediator());
+				final Main main = new Main(new MockupMediator("wizkid"));
 				final ArrayList<Work> toBeProcessed = new ArrayList<Work>();
 				toBeProcessed.add(new Work() {
 					@Override
@@ -47,7 +47,7 @@ public class TestGUI {
 						System.out
 								.println("Test: Updating files for user 2!!!");
 						main.getMediator().updateUserFiles(
-								2,
+								"gigix2",
 								new ArrayList<String>(Arrays.asList("ana3",
 										"are3", "mere2", "si pere2")));
 					}

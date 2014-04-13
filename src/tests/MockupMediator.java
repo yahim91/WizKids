@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 
+import network.Network;
 import statusbar.StatusBar;
 import table.ProgressTableModel;
 import table.RowData;
@@ -25,10 +26,9 @@ public class MockupMediator implements IMediator {
 	private StatusBar sb;
 	private static int userid;
 	private Config config;
+	private Network network;
 	
-	public MockupMediator() {
-		config = new Config();
-		config.readConfigFile();
+	public MockupMediator(String username) {
 	}
 	
 	@Override
@@ -95,20 +95,33 @@ public class MockupMediator implements IMediator {
 	}
 	
 	@Override
-	public void updateUserFiles(Integer id, ArrayList<String> files) {
+	public void updateUserFiles(String name, ArrayList<String> files) {
 		Enumeration<UserFiles> uf_enum = uf.elements();
 		while(uf_enum.hasMoreElements()) {
 			UserFiles entry = uf_enum.nextElement();
-			if (entry.getId() == id) {
+			if (entry.getName() == name) {
 				entry.updateFiles(files);
 				break;
 			}
 		}
 	}
 
+	
 	@Override
-	public Config getConfig() {
-		return config;
+	public void registerNetwork(Network network) {
+		this.network = network;
+	}
+
+	@Override
+	public void registerConfig(Config config) {
+		this.config = config;
+		
+	}
+
+	@Override
+	public void updateUserInfo(String name, Integer port, String address) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

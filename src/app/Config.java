@@ -1,7 +1,11 @@
 package app;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,7 +19,9 @@ import org.xml.sax.SAXException;
 public class Config {
 
 	private File configFile;
-	private String path = "config.xml";
+	private File sharedDocFile;
+	private String path = "";
+	private String users_folder = "users_folder/";
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
 	private Document doc;
@@ -23,10 +29,14 @@ public class Config {
 	private String username = "";
 	private Integer port;
 	private String address;
+	private IMediator mediator;
 
-	public Config() {
+	public Config(String username, IMediator med) {
+		this.mediator = med;
 		try {
-			configFile = new File(path);
+			this.username = username;
+			configFile = new File(path + username + ".xml");
+			sharedDocFile = new File(users_folder + username + ".txt");
 			dbFactory = DocumentBuilderFactory.newInstance();
 			dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(configFile);
@@ -40,12 +50,12 @@ public class Config {
 	}
 
 	public void readConfigFile() {
-		NodeList nList = doc.getElementsByTagName("user");
+		NodeList nList = doc.getElementsByTagName("app");
 		Element node = (Element) nList.item(0);
-		username = node.getAttribute("username");
 		port = Integer.parseInt(node.getElementsByTagName("port").item(0)
 				.getTextContent());
 		address = node.getElementsByTagName("address").item(0).getTextContent();
+		
 	}
 
 	public String getUsername() {
@@ -58,5 +68,45 @@ public class Config {
 
 	public String getAddress() {
 		return address;
+	}
+	
+	public void getFiles() {
+		/* to remove after database implementation */
+		ArrayList<String> users = new ArrayList<String>();
+		users.add("duffy");
+		users.add("sam");
+		users.add("bugs");
+		try {
+			mediator.addUser(username, new ArrayList<String>());
+			BufferedReader buffer = new BufferedReader(new FileReader(sharedDocFile));
+			ArrayList<String> files = new ArrayList<String>();
+			String file = "";
+			while((file = buffer.readLine()) != null) {
+				files.add(file);
+			}
+			mediator.updateUserFiles(username, files);
+			for(String user : users) {
+				if (user.equals(username))
+					continue;
+				if (user.equals("duffy")) {
+					port = 8888;
+				} else {
+					port = 9999;
+				}
+				mediator.addUser(user, new ArrayList<String>());
+				mediator.updateUserInfo(user, port, "localhost");
+				buffer.close();
+				buffer = new BufferedReader(new FileReader(new File(users_folder + user + ".txt")));
+				files.clear();
+				while((file = buffer.readLine()) != null) {
+					files.add(file);
+				}
+				mediator.updateUserFiles(user, files);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

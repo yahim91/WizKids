@@ -1,6 +1,5 @@
 <app>
-	<user username="wizkid">
 		<port>9999</port>
 		<address>192.168.0.1</address>
-	</user>
+		<usersfolder>users_folder</usersfolder>
 </app>

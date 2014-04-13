@@ -1,0 +1,5 @@
+<app>
+		<port>9999</port>
+		<address>localhost</address>
+		<usersfolder>users_folder</usersfolder>
+</app>

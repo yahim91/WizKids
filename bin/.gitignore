@@ -1,7 +1,6 @@
-/StatusBar
-/Worker
 /app
+/statusbar
 /table
 /tests
-/statusbar
 /worker
+/network

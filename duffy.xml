@@ -1,0 +1,5 @@
+<app>
+		<port>8888</port>
+		<address>localhost</address>
+		<usersfolder>users_folder</usersfolder>
+</app>
