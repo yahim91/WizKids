@@ -63,13 +63,10 @@ public class RequestedFileInfo {
 			buffer.flip();
 			writeToBuffer();
 			state = SENDING_FILE;
-			//key.interestOps(SelectionKey.OP_WRITE);
 		} else if (state.equals(SENDING_FILE)) {
-			while(fc.read(fileBuffer) >= 0 || fileBuffer.position() > 0) {
-				System.out.println("here write " + fileBuffer.position());
-				fileBuffer.flip();
+			fileBuffer.flip();
+			while(written_bytes < sendingFile.length()) {
 				written_bytes += socketChannel.write(fileBuffer);
-				fileBuffer.clear();
 			}
 			if (written_bytes >= sendingFile.length())
 				state = SENDING_COMPLETE;
