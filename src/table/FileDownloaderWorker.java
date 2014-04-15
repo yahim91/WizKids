@@ -138,18 +138,15 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 			status = SENDING_READY;
 			buf.clear();
 		} else if (status.equals(SENDING_READY)) {
-			int bytes_received;
-			while ((bytes_received = socketChannel.read(buf)) > 0) {
-				System.out.println("here pos " + buf.position());
+			int bytes_received = 0;
+			while ((bytes_received = socketChannel.read(buf)) > 0 /*&& bytes_received < size*/) {
+				System.out.println("here " + bytes_received );
 				buf.flip();
+				//bytes_received += buf.getInt();
 				fc.write(buf);
 				buf.clear();
-				bytes_read += bytes_received;
 			}
-			System.out.println("read byte " + bytes_read);
-			// if (bytes_read >= size)
-			// status = SENDING_COMPLETE;
-			// socketChannel.close();
+			status = SENDING_COMPLETE;
 		} else if (status.equals(SENDING_COMPLETE)) {
 			socketChannel.close();
 		}

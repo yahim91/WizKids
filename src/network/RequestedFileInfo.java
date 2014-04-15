@@ -64,10 +64,20 @@ public class RequestedFileInfo {
 			writeToBuffer();
 			state = SENDING_FILE;
 		} else if (state.equals(SENDING_FILE)) {
+			int bytesRead = fileBuffer.limit();
+			System.out.println("Size is " + bytesRead);
+			//buffer.clear();
+			//buffer.putInt(bytesRead);
 			fileBuffer.flip();
-			while(written_bytes < sendingFile.length()) {
-				written_bytes += socketChannel.write(fileBuffer);
-			}
+			buffer.put(fileBuffer);
+			buffer.flip();
+			while (socketChannel.write(buffer) > 0) ;
+			
+			state = SENDING_COMPLETE;
+			/*while(written_bytes < sendingFile.length()) {
+				written_bytes += bytesRead; 
+				socketChannel.write(buffer);
+			}*/
 			if (written_bytes >= sendingFile.length())
 				state = SENDING_COMPLETE;
 		} else if(state.equals(SENDING_COMPLETE)) {
@@ -89,7 +99,6 @@ public class RequestedFileInfo {
 
 	private int readFromBuffer() throws IOException {
 		return socketChannel.read(buffer);
-
 	}
 
 }
