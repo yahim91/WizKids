@@ -120,8 +120,17 @@ public class MockupMediator implements IMediator {
 
 	@Override
 	public void updateUserInfo(String name, Integer port, String address) {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public ProgressTableModel getTableModel() {
+		return tm;
+	}
+
+	@Override
+	public String getUserName() {
+		return config.getUsername();
 	}
 	
 	

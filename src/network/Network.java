@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 
 import javax.xml.crypto.KeySelector;
 
+import app.IMediator;
+
 public class Network {
 	public static final int BUF_SIZE = 1024;
 	private Integer port = 0;
@@ -22,10 +24,12 @@ public class Network {
 	private String filesPath = "";
 	Selector selector = null;
 	ServerSocketChannel serverSocketChannel = null;
+	IMediator mediator;
 	public static ExecutorService pool = Executors.newFixedThreadPool(5);
 
-	public Network(String filesPath) {
+	public Network(String filesPath, IMediator med) {
 		this.filesPath = filesPath;
+		this.mediator = med;
 	}
 
 	public void setIP(String IP) {
@@ -109,7 +113,7 @@ public class Network {
 				key.selector().wakeup();
 			}
 		};
-		key.interestOps();
+		key.interestOps(0);
 		pool.execute(runObj);
 
 	}
@@ -122,7 +126,7 @@ public class Network {
 		SocketChannel socketChannel = serverSocketChannel.accept(); // initialize
 																	// from
 																	// accept
-		RequestedFileInfo fileInfo = new RequestedFileInfo(filesPath, socketChannel);
+		RequestedFileInfo fileInfo = new RequestedFileInfo(filesPath, socketChannel, this);
 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ, fileInfo);

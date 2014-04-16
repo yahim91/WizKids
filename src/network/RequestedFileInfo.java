@@ -11,14 +11,17 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 
+import table.RowData;
+
 public class RequestedFileInfo {
 
-	private static final int BUF_SIZE = 1024;
+	private static final int BUFFER_SIZE = 1024;
 	private static final String INIT = "INIT";
 	private static final String SENDING_SIZE = "SENDING_SIZE";
 	private static final String SENDING_FILE = "SENDING_FILE";
 	private static final String SENDING_COMPLETE = "SENDING_COMPLETE";
 	private ByteBuffer buffer;
+	private String rqUserName;
 	private String state = INIT;
 	private String fileName;
 	private File sendingFile;
@@ -27,13 +30,16 @@ public class RequestedFileInfo {
 	private FileChannel fc;
 	private MappedByteBuffer fileBuffer;
 	private SocketChannel socketChannel;
-	private Integer written_bytes;
+	private long fileSize;
+	private Network network;
+	private Integer rowIndex;
 
-	public RequestedFileInfo(String path, SocketChannel socketChannel) {
-		buffer = ByteBuffer.allocateDirect(BUF_SIZE);
+	public RequestedFileInfo(String path, SocketChannel socketChannel,
+			Network net) {
+		buffer = ByteBuffer.allocateDirect(BUFFER_SIZE + 8);
 		this.path = path;
 		this.socketChannel = socketChannel;
-		this.written_bytes = 0;
+		this.network = net;
 	}
 
 	public ByteBuffer getBuffer() {
@@ -43,47 +49,70 @@ public class RequestedFileInfo {
 	public void processBuffer(SelectionKey key) throws IOException {
 		System.out.println("State is " + state);
 		if (state.equals(INIT)) {
-			if (readFromBuffer() <= 0)
-				return;
+			buffer.clear();
+			int bytes;
+			while ((bytes = socketChannel.read(buffer)) > 0) {
+				if (!buffer.hasRemaining()) {
+					break;
+				}
+			}
 			buffer.flip();
-			byte[] cmd = new byte[buffer.getInt()];
-			buffer.get(cmd);
-			fileName = new String(cmd);
+			if (!buffer.hasRemaining()) {
+				return;
+			}
+
+			byte[] file = new byte[buffer.getInt()];
+			byte[] name = new byte[buffer.getInt()];
+			buffer.get(file);
+			buffer.get(name);
+			fileName = new String(file);
+			rqUserName = new String(name);
 			sendingFile = new File(path + "/" + fileName);
 			raf = new RandomAccessFile(sendingFile, "rw");
 			fc = raf.getChannel();
-			fileBuffer = fc.map(FileChannel.MapMode.READ_WRITE, 0, fc.size());
-			state = "SENDING_SIZE";
+			state = SENDING_SIZE;
 			System.out.println("file name is " + path + "/" + fileName);
 			buffer.clear();
+			rowIndex = network.mediator.getTableModel().getRowCount();
+			network.mediator.getTableModel().addRow(
+					new RowData(network.mediator.getUserName(), rqUserName,
+							fileName));
 			key.interestOps(SelectionKey.OP_WRITE);
 		} else if (state.equals(SENDING_SIZE)) {
-			buffer.putInt((int) sendingFile.length());
+			fileSize = sendingFile.length();
+			buffer.putLong(fileSize);
 			System.out.println("sending file size " + sendingFile.length());
 			buffer.flip();
 			writeToBuffer();
 			state = SENDING_FILE;
 		} else if (state.equals(SENDING_FILE)) {
-			int bytesRead = fileBuffer.limit();
-			System.out.println("Size is " + bytesRead);
-			//buffer.clear();
-			//buffer.putInt(bytesRead);
-			fileBuffer.flip();
-			buffer.put(fileBuffer);
-			buffer.flip();
-			while (socketChannel.write(buffer) > 0) ;
-			
+			long bytes_read = 0;
+			long length;
+			while (bytes_read < fileSize) {
+				length = fileSize - bytes_read < BUFFER_SIZE ? fileSize
+						- bytes_read : BUFFER_SIZE;
+				fileBuffer = fc.map(FileChannel.MapMode.READ_ONLY, bytes_read,
+						length);
+				buffer.putLong(length);
+				buffer.put(fileBuffer);
+				buffer.flip();
+
+				bytes_read += length;
+				while (socketChannel.write(buffer) > 0) {
+					if (!buffer.hasRemaining()) {
+						buffer.clear();
+						break;
+					}
+				}
+				System.out.println("Sent " + bytes_read + " bytes!");
+				network.mediator.getTableModel().updateStatus(rowIndex,
+						(int) (bytes_read * 100 / fileSize));
+			}
 			state = SENDING_COMPLETE;
-			/*while(written_bytes < sendingFile.length()) {
-				written_bytes += bytesRead; 
-				socketChannel.write(buffer);
-			}*/
-			if (written_bytes >= sendingFile.length())
-				state = SENDING_COMPLETE;
-		} else if(state.equals(SENDING_COMPLETE)) {
+		} else if (state.equals(SENDING_COMPLETE)) {
 			buffer.clear();
+			System.out.println("closing");
 			socketChannel.close();
-			//key.selector().close();
 			fc.close();
 			raf.close();
 		}
@@ -93,12 +122,8 @@ public class RequestedFileInfo {
 		while (socketChannel.write(buffer) > 0) {
 			if (!buffer.hasRemaining()) {
 				buffer.clear();
+				break;
 			}
 		}
 	}
-
-	private int readFromBuffer() throws IOException {
-		return socketChannel.read(buffer);
-	}
-
 }

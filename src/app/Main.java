@@ -131,7 +131,7 @@ public class Main extends JFrame {
 	static public void main(String[] argv) {
 		final String username = argv[0];
 		final IMediator mediator = new Mediator(username);
-		network = new Network("users_folder/" + username);
+		network = new Network("users_folder/" + username, mediator);
 		config = new Config(username, mediator);
 		mediator.registerConfig(config);
 		mediator.registerNetwork(network);

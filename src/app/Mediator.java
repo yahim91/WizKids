@@ -1,5 +1,7 @@
 package app;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -53,15 +55,26 @@ public class Mediator implements IMediator {
 	public void considerFile(int indexU, int indexF) {
 		String fileName = files.get(indexF);
 		UserFiles user = uf.get(indexU);
+		sb.incStarted();
 
-		tm.addRow(new RowData(user.getName(), "_me", fileName));
+		tm.addRow(new RowData(user.getName(), config.getUsername(), fileName));
 		final int index = tm.getRowCount() - 1;
 		FileDownloaderWorker fileDownloader = new FileDownloaderWorker(
 				user.getAddress(), user.getListeningPort(), fileName, config.getUsername());
+		fileDownloader.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("progress")) {
+					tm.updateStatus(index, (Integer)evt.getNewValue());
+					if ((Integer)evt.getNewValue() == 100) // download complete
+						sb.incFinished();
+				}
+			}
+		});
 		fileDownloader.execute();
-
 	}
 
+	
 	@Override
 	public void addUser(String name, ArrayList<String> files) {
 		uf.addElement(new UserFiles(name, files, this));
@@ -104,5 +117,15 @@ public class Mediator implements IMediator {
 				break;
 			}
 		}
+	}
+
+	@Override
+	public ProgressTableModel getTableModel() {
+		return this.tm;
+	}
+
+	@Override
+	public String getUserName() {
+		return config.getUsername();
 	}
 }
