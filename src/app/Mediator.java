@@ -7,6 +7,8 @@ import java.util.Enumeration;
 
 import javax.swing.DefaultListModel;
 
+import org.apache.log4j.Logger;
+
 import network.Network;
 import statusbar.StatusBar;
 import table.FileDownloaderWorker;

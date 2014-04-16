@@ -17,6 +17,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
 import network.Network;
 import statusbar.StatusBar;
 import table.ProgressCellRender;
@@ -32,7 +35,7 @@ public class Main extends JFrame {
 	private final JLabel statusLabel;
 	private static Network network = null;
 	private static Config config;
-
+	private static Logger logger;
 	private final IMediator med;
 
 	public Main(final IMediator med) {
@@ -135,6 +138,9 @@ public class Main extends JFrame {
 		config = new Config(username, mediator);
 		mediator.registerConfig(config);
 		mediator.registerNetwork(network);
+		logger = Logger.getLogger(Main.class);
+		//logger.addAppender(new Ap);
+		BasicConfigurator.configure();
 		
 		// run on EDT (event-dispatching thread), not on main thread!
 		SwingUtilities.invokeLater(new Runnable() {
@@ -143,7 +149,6 @@ public class Main extends JFrame {
 			}
 		});
 		
-
 		network.startListening();
 	}
 }

@@ -19,6 +19,8 @@ import app.IMediator;
 
 public class Network {
 	public static final int BUF_SIZE = 1024;
+	private static final String WRITE = "WRITE";
+	private static final String READ = "READ";
 	private Integer port = 0;
 	private String IP = "";
 	private String filesPath = "";
@@ -92,29 +94,35 @@ public class Network {
 		System.out.println("WRITE: ");
 
 		RequestedFileInfo fileInfo = (RequestedFileInfo) key.attachment();
-		fileInfo.processBuffer(key);
+		fileInfo.processBuffer(key, WRITE);
 	}
 
 	private void read(SelectionKey keyP) {
 		final SelectionKey key = keyP;
 
-		Runnable runObj = new Runnable() {
+		/*Runnable runObj = new Runnable() {
 
 			@Override
-			public void run() {
+			public void run() {*/
 				
 				RequestedFileInfo fileInfo = (RequestedFileInfo) key.attachment();
+				SocketChannel socketChannel = (SocketChannel) key.channel();
 				try {
-					fileInfo.processBuffer(key);
+					fileInfo.processBuffer(key, READ);
 				} catch (IOException e) {
-					e.printStackTrace();
+					System.err.println("Error occured while transmitting file!");
+					try {
+						socketChannel.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 				
-				key.selector().wakeup();
-			}
+				//key.selector().wakeup();
+			/*}
 		};
 		key.interestOps(0);
-		pool.execute(runObj);
+		pool.execute(runObj);*/
 
 	}
 

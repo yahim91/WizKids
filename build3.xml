@@ -17,6 +17,7 @@
     <path id="IDP_Project.classpath">
         <pathelement location="bin"/>
         <path refid="JUnit 4.libraryclasspath"/>
+    	<pathelement location="lib/log4j-1.2.17.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>

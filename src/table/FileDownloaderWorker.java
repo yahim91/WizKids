@@ -17,12 +17,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.SwingWorker;
+import javax.xml.crypto.KeySelector;
 
 public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String RECEIVING_SIZE = "RECEIVING_SIZE";
 	private static final String RECEIVING_READY = "RECEIVING_READY";
 	private static final String RECEIVING_COMPLETE = "RECEIVING_COMPLETE";
+	private static final String SENDING_ACK = "SENDING_ACK";
 	SocketChannel socketChannel;
 	String fileName;
 	Selector selector = null;
@@ -33,6 +35,7 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	private FileChannel fc;
 	private long size;
 	private File receivingFile;
+	private long bytes_received = 0;
 
 	public FileDownloaderWorker(String address, Integer port, String fileName,
 			String userName) {
@@ -71,7 +74,7 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("An error ocurrred in connection!");
 		} finally {
 			try {
 				socketChannel.close();
@@ -102,6 +105,18 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 				}
 			}
 			status = RECEIVING_SIZE;
+		} else if (status.equals(SENDING_ACK)) {
+			buf.clear();
+			buf.putLong(bytes_received);
+			buf.flip();
+			while (socketChannel.write(buf) > 0) {
+				if (!buf.hasRemaining()) {
+					buf.clear();
+					break;
+				}
+			}
+			status = RECEIVING_READY;
+			System.out.println("Sent ack" + bytes_received);
 		}
 		key.interestOps(SelectionKey.OP_READ);
 	}
@@ -127,27 +142,48 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 
 			raf = new RandomAccessFile(receivingFile, "rw");
 			fc = raf.getChannel();
-			status = RECEIVING_READY;
+			status = SENDING_ACK;
+			key.interestOps(SelectionKey.OP_WRITE);
 			buf.clear();
 		} else if (status.equals(RECEIVING_READY)) {
-			long bytes_received = 0;
-			while (bytes_received < size) {
+			if (size == 0) {
+				this.setProgress(100);
+				status = RECEIVING_COMPLETE;
+			} else if (bytes_received < size) {
+				buf.clear();
 				while (socketChannel.read(buf) > 0) {
 					if (!buf.hasRemaining()) {
 						break;
 					}
 				}
 				buf.flip();
+				if (!buf.hasRemaining()) {
+					return;
+				}
+				System.out.println("Limit buffer " + buf.limit());
 				long rcvd = buf.getLong();
+				System.out.println("RCVD is " + rcvd);
 				fc.write(buf, bytes_received);
 				buf.clear();
 				bytes_received += rcvd;
-				this.setProgress((int)((bytes_received * 100) / size));
+				this.setProgress((int) ((bytes_received * 100) / size));
 				System.out.println("bytes received" + bytes_received);
+				status = SENDING_ACK;
+				key.interestOps(SelectionKey.OP_WRITE);
+				if (bytes_received == size) {
+					selector.close();
+					socketChannel.close();
+					fc.close();
+					raf.close();
+				}
+			} else {
+				status = RECEIVING_COMPLETE;
 			}
-			status = RECEIVING_COMPLETE;
 		} else if (status.equals(RECEIVING_COMPLETE)) {
+			selector.close();
 			socketChannel.close();
+			fc.close();
+			raf.close();
 		}
 
 	}
