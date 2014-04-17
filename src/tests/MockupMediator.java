@@ -132,6 +132,18 @@ public class MockupMediator implements IMediator {
 	public String getUserName() {
 		return config.getUsername();
 	}
+
+	@Override
+	public ArrayList<String> getUserFiles(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void displayMessage(String message) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 }

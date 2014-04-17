@@ -108,4 +108,9 @@ public class ProgressTableModel extends AbstractTableModel {
     		 }
     	 }
      }
+     
+     public void updateMessage(int index, String msg) {
+    	 setValueAt(msg, index, 4);
+    	 fireTableCellUpdated(index, 4);
+     }
 }

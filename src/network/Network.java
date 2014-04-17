@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 
 import javax.xml.crypto.KeySelector;
 
+import org.apache.log4j.Logger;
+
 import app.IMediator;
 
 public class Network {
@@ -27,7 +29,7 @@ public class Network {
 	Selector selector = null;
 	ServerSocketChannel serverSocketChannel = null;
 	IMediator mediator;
-	public static ExecutorService pool = Executors.newFixedThreadPool(5);
+	private Logger logger = Logger.getLogger("Main");
 
 	public Network(String filesPath, IMediator med) {
 		this.filesPath = filesPath;
@@ -72,7 +74,7 @@ public class Network {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Connection error!");
 		} finally {
 			// cleanup
 
@@ -91,57 +93,40 @@ public class Network {
 	}
 
 	private void write(SelectionKey key) throws IOException {
-		System.out.println("WRITE: ");
-
 		RequestedFileInfo fileInfo = (RequestedFileInfo) key.attachment();
 		fileInfo.processBuffer(key, WRITE);
 	}
 
-	private void read(SelectionKey keyP) {
-		final SelectionKey key = keyP;
+	private void read(SelectionKey key) {
 
-		/*Runnable runObj = new Runnable() {
-
-			@Override
-			public void run() {*/
-				
-				RequestedFileInfo fileInfo = (RequestedFileInfo) key.attachment();
-				SocketChannel socketChannel = (SocketChannel) key.channel();
-				try {
-					fileInfo.processBuffer(key, READ);
-				} catch (IOException e) {
-					System.err.println("Error occured while transmitting file!");
-					try {
-						socketChannel.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
-				
-				//key.selector().wakeup();
-			/*}
-		};
-		key.interestOps(0);
-		pool.execute(runObj);*/
+		RequestedFileInfo fileInfo = (RequestedFileInfo) key.attachment();
+		SocketChannel socketChannel = (SocketChannel) key.channel();
+		try {
+			fileInfo.processBuffer(key, READ);
+		} catch (IOException e) {
+			logger.error("Error occured while transmitting file!");
+			
+			try {
+				socketChannel.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
 
 	}
 
 	private void accept(SelectionKey key) throws IOException {
-		System.out.print("ACCEPT: ");
 
 		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key
 				.channel(); // initialize from key
-		SocketChannel socketChannel = serverSocketChannel.accept(); // initialize
-																	// from
-																	// accept
-		RequestedFileInfo fileInfo = new RequestedFileInfo(filesPath, socketChannel, this);
+		SocketChannel socketChannel = serverSocketChannel.accept(); 
+		RequestedFileInfo fileInfo = new RequestedFileInfo(filesPath,
+				socketChannel, this);
 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ, fileInfo);
+		logger.info("New connection accepted from " + socketChannel.socket().getRemoteSocketAddress() + "!");
 
-		// display remote client address
-		System.out.println("Connection from: "
-				+ socketChannel.socket().getRemoteSocketAddress());
 
 	}
 

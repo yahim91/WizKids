@@ -17,10 +17,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
 import network.Network;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.RollingFileAppender;
+
 import statusbar.StatusBar;
 import table.ProgressCellRender;
 import table.ProgressTableModel;
@@ -89,7 +91,6 @@ public class Main extends JFrame {
 				}
 			}
 		});
-		
 
 		// init files list, for current selected user
 		DefaultListModel<String> files = new DefaultListModel<String>();
@@ -138,17 +139,19 @@ public class Main extends JFrame {
 		config = new Config(username, mediator);
 		mediator.registerConfig(config);
 		mediator.registerNetwork(network);
-		logger = Logger.getLogger(Main.class);
-		//logger.addAppender(new Ap);
-		BasicConfigurator.configure();
 		
+		logger = Logger.getLogger(Main.class);
+		PropertyConfigurator.configure(config.getLogFileName());
+
+		logger.info("hello");
+
 		// run on EDT (event-dispatching thread), not on main thread!
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				new Main(mediator);
 			}
 		});
-		
+
 		network.startListening();
 	}
 }

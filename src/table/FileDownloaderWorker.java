@@ -5,26 +5,28 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
-import java.nio.channels.Channels;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.print.DocFlavor.BYTE_ARRAY;
+import javax.sound.midi.Receiver;
 import javax.swing.SwingWorker;
-import javax.xml.crypto.KeySelector;
 
-public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
+import org.apache.log4j.Logger;
+
+import app.IMediator;
+
+public class FileDownloaderWorker extends SwingWorker<Boolean, String> {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String RECEIVING_SIZE = "RECEIVING_SIZE";
 	private static final String RECEIVING_READY = "RECEIVING_READY";
 	private static final String RECEIVING_COMPLETE = "RECEIVING_COMPLETE";
 	private static final String SENDING_ACK = "SENDING_ACK";
+	private static final String ERROR_RECEIVING = "ERROR_RECEIVING";
 	SocketChannel socketChannel;
 	String fileName;
 	Selector selector = null;
@@ -36,12 +38,22 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	private long size;
 	private File receivingFile;
 	private long bytes_received = 0;
+	private Logger logger;
+	private String address;
+	private Integer port;
+	private IMediator mediator;
+	private Integer index;
 
 	public FileDownloaderWorker(String address, Integer port, String fileName,
-			String userName) {
+			String userName, IMediator mediator, Integer index) {
+		logger = Logger.getLogger("Main");
+		this.mediator = mediator;
+		this.index = index;
 		try {
 			socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
+			this.address = address;
+			this.port = port;
 			socketChannel.connect(new InetSocketAddress(address, port));
 			this.fileName = fileName;
 			this.userName = userName;
@@ -49,13 +61,12 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 			socketChannel.register(selector, SelectionKey.OP_CONNECT);
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.info("Connecting to " + address + ":" + port + " failed!");
 		}
 	}
 
 	@Override
-	protected Integer doInBackground() {
-		System.out.println("Crt th" + Thread.currentThread());
-
+	protected Boolean doInBackground() {
 		try {
 			while (true) {
 				selector.select();
@@ -74,22 +85,22 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 			}
 
 		} catch (IOException e) {
-			System.err.println("An error ocurrred in connection!");
+			logger.error("Connection to " + address + ":" + port);
+			status = ERROR_RECEIVING;
 		} finally {
 			try {
 				socketChannel.close();
-				System.out.println("closing");
+				logger.info("closing socket");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return bytes_received == size;
 	}
 
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		ByteBuffer buf = (ByteBuffer) key.attachment();
-		System.out.println("State is " + status);
 		if (status.equals(INIT)) {
 			String cmd = fileName;
 			buf.putInt(cmd.length());
@@ -116,7 +127,7 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 				}
 			}
 			status = RECEIVING_READY;
-			System.out.println("Sent ack" + bytes_received);
+			logger.info("Sent ack" + bytes_received + "!");
 		}
 		key.interestOps(SelectionKey.OP_READ);
 	}
@@ -124,7 +135,7 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	private void read(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		ByteBuffer buf = (ByteBuffer) key.attachment();
-		System.out.println("State is " + status);
+		logger.info("State is " + status);
 		if (status.equals(RECEIVING_SIZE)) {
 			while (socketChannel.read(buf) > 0) {
 				if (!buf.hasRemaining()) {
@@ -133,7 +144,7 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 			}
 			buf.flip();
 			size = buf.getLong();
-			System.out.println("Size of file is " + size);
+			logger.info("Size of file is " + size);
 			receivingFile = new File("users_folder" + "/" + userName + "/"
 					+ fileName);
 			if (!receivingFile.exists()) {
@@ -160,14 +171,12 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 				if (!buf.hasRemaining()) {
 					return;
 				}
-				System.out.println("Limit buffer " + buf.limit());
 				long rcvd = buf.getLong();
-				System.out.println("RCVD is " + rcvd);
 				fc.write(buf, bytes_received);
 				buf.clear();
 				bytes_received += rcvd;
 				this.setProgress((int) ((bytes_received * 100) / size));
-				System.out.println("bytes received" + bytes_received);
+				logger.info("bytes received " + bytes_received);
 				status = SENDING_ACK;
 				key.interestOps(SelectionKey.OP_WRITE);
 				if (bytes_received == size) {
@@ -189,34 +198,35 @@ public class FileDownloaderWorker extends SwingWorker<Integer, Integer> {
 	}
 
 	private void connect(SelectionKey key) throws IOException {
-		System.out.println("connected");
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		socketChannel.finishConnect();
 		ByteBuffer buf = ByteBuffer.allocateDirect(BUFFER_SIZE + 8);
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_WRITE, buf);
+		logger.info("Connected");
+		
 	}
 
-	protected void process(List<Integer> chunks) {
-
-		System.out.println("Crt th" + Thread.currentThread());
-
-		System.out.println("Begin iteration");
-		for (Integer i : chunks) {
-			System.out.println(i);
-		}
-		System.out.println("End iteration");
-		System.out.println(chunks);
+	protected void process(List<String> chunks) {
+		
 	}
 
 	@Override
 	protected void done() {
 
-		System.out.println("Crt th" + Thread.currentThread());
-
 		if (isCancelled())
-			System.out.println("Cancelled !");
-		else
-			System.out.println("Done !");
+			logger.info("Cancelled !");
+		else {
+			if (bytes_received == size && !status.equals(ERROR_RECEIVING)) {
+				logger.info("Receiving complete!");
+				mediator.getUserFiles(userName).add(fileName);
+			} else {
+				logger.info("Receiving failed!");
+				mediator.getTableModel().updateMessage(index, "Error");
+				mediator.displayMessage("Error downloading file");
+			}
+			
+			
+		}
 	}
 }

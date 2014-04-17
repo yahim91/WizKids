@@ -25,3 +25,14 @@ Pentru testare am realizat:
 	complet implementat: updateaza grafica la transfer simulat, introduce noi evenimente de adaugare 
 	utilizator, sau update pentru lista de fisiere a unui utilizator 
 	 
+	 
+Tema 2 IDP
+
+Transferul fisierelor intre clienti se realizeaza prin api-ul nio. Practic fiecare client deschide un SocketServerChannel,
+care asculta pe un anumit port conexiuni de la ceilalti. Acesta este non-blocant iar evenimentele sunt procesate printr-un
+selector. La acceptarea unei conexiuni, se creeaza un obiect de tipul RequestedFileInfo care retine starile unui transfer de
+fisiere. La client starile sunt retinute in FileDownloaderWorker care face receptia fisierului intr-un thread in background.
+
+Alte resurse:
+La compilare se deschid 3 instante la delay de 3s. Exista 3 useri: bugs, duffy si sam, iar fiecare are 3 fisiere. 
+

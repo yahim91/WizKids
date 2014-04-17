@@ -13,6 +13,8 @@ import java.nio.channels.WritableByteChannel;
 
 import javax.xml.crypto.KeySelector;
 
+import org.apache.log4j.Logger;
+
 import table.RowData;
 
 public class RequestedFileInfo {
@@ -39,6 +41,7 @@ public class RequestedFileInfo {
 	private Network network;
 	private Integer rowIndex;
 	private long bytes_read;
+	private Logger logger = Logger.getLogger("Main");
 
 	public RequestedFileInfo(String path, SocketChannel socketChannel,
 			Network net) {
@@ -53,7 +56,6 @@ public class RequestedFileInfo {
 	}
 
 	public void processBuffer(SelectionKey key, String mode) throws IOException {
-		//System.out.println("State is " + state);
 		if (state.equals(INIT) && mode.equals(READ)) {
 			buffer.clear();
 			readFromBuffer();
@@ -74,7 +76,8 @@ public class RequestedFileInfo {
 					new RowData(network.mediator.getUserName(), rqUserName,
 							fileName));
 			key.interestOps(SelectionKey.OP_WRITE);
-			System.out.println("file name is " + path + "/" + fileName);
+			//logger.info("File requested is " + fileName);
+			logger.info("File requested is " + path + "/" + fileName);
 		} else if (state.equals(SENDING_SIZE) && mode.equals(WRITE)) {
 			fileSize = sendingFile.length();
 			buffer.clear();
@@ -83,7 +86,7 @@ public class RequestedFileInfo {
 			writeToBuffer();
 			state = RECEIVING_ACK;
 			key.interestOps(SelectionKey.OP_READ);
-			System.out.println("sending file size " + sendingFile.length());
+			logger.info("Sending file size " + sendingFile.length() + ".");
 		} else if (state.equals(SENDING_FILE) && mode.equals(WRITE)) {
 			long length;
 			if (fileSize == 0) {
@@ -99,7 +102,7 @@ public class RequestedFileInfo {
 				buffer.flip();
 				bytes_read += length;
 				writeToBuffer();
-				System.out.println("Sent " + bytes_read + " bytes!");
+				logger.info("Sent " + bytes_read + " bytes!");
 				network.mediator.getTableModel().updateStatus(rowIndex,
 						(int) (bytes_read * 100 / fileSize));
 				key.interestOps(SelectionKey.OP_READ);
@@ -108,6 +111,8 @@ public class RequestedFileInfo {
 					socketChannel.close();
 					fc.close();
 					raf.close();
+					state = SENDING_COMPLETE;
+					network.mediator.getUserFiles(rqUserName).add(fileName);
 				}
 			} else {
 				state = SENDING_COMPLETE;
@@ -122,17 +127,17 @@ public class RequestedFileInfo {
 			}
 			ack = buffer.getLong();
 			if (ack == bytes_read) {
-				System.out.println("received ack " + ack);
+				logger.info("Received ack " + ack);
 				state = SENDING_FILE;
 				key.interestOps(SelectionKey.OP_WRITE);
 			} else {
-				System.out.println("Error: Ack " + ack);
+				logger.error("Error: Ack " + ack);
 				state = SENDING_COMPLETE;
 			}
 			buffer.clear();
 		} else if (state.equals(SENDING_COMPLETE)) {
 			buffer.clear();
-			System.out.println("closing");
+			logger.info("closing");
 			socketChannel.close();
 			fc.close();
 			raf.close();

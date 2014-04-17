@@ -2,4 +2,5 @@
 		<port>8888</port>
 		<address>localhost</address>
 		<usersfolder>users_folder</usersfolder>
+		<logproperties>log.properties</logproperties>
 </app>

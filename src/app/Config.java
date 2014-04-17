@@ -27,6 +27,7 @@ public class Config {
 	private Document doc;
 
 	private String username = "";
+	private String logPropertiesFile = "";
 	private Integer port;
 	private String address;
 	private IMediator mediator;
@@ -55,6 +56,7 @@ public class Config {
 		port = Integer.parseInt(node.getElementsByTagName("port").item(0)
 				.getTextContent());
 		address = node.getElementsByTagName("address").item(0).getTextContent();
+		logPropertiesFile = node.getElementsByTagName("logproperties").item(0).getTextContent();
 		
 	}
 
@@ -71,7 +73,7 @@ public class Config {
 	}
 	
 	public void getFiles() {
-		/* to remove after database implementation */
+		/* TODO to remove after database implementation */
 		ArrayList<String> users = new ArrayList<String>();
 		users.add("duffy");
 		users.add("sam");
@@ -90,8 +92,10 @@ public class Config {
 					continue;
 				if (user.equals("duffy")) {
 					port = 8888;
-				} else {
+				} else if (user.equals("bugs")){
 					port = 9999;
+				} else {
+					port = 7777;
 				}
 				mediator.addUser(user, new ArrayList<String>());
 				mediator.updateUserInfo(user, port, "localhost");
@@ -108,5 +112,9 @@ public class Config {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getLogFileName() {
+		return logPropertiesFile;
 	}
 }

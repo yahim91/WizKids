@@ -1,5 +1,5 @@
 <app>
-		<port>9999</port>
+		<port>7777</port>
 		<address>localhost</address>
 		<usersfolder>users_folder</usersfolder>
 		<logproperties>log.properties</logproperties>

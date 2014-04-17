@@ -57,12 +57,15 @@ public class Mediator implements IMediator {
 	public void considerFile(int indexU, int indexF) {
 		String fileName = files.get(indexF);
 		UserFiles user = uf.get(indexU);
+		if (user.getName() == config.getUsername()) {
+			return;
+		}
 		sb.incStarted();
 
 		tm.addRow(new RowData(user.getName(), config.getUsername(), fileName));
 		final int index = tm.getRowCount() - 1;
 		FileDownloaderWorker fileDownloader = new FileDownloaderWorker(
-				user.getAddress(), user.getListeningPort(), fileName, config.getUsername());
+				user.getAddress(), user.getListeningPort(), fileName, config.getUsername(), this, index);
 		fileDownloader.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -129,5 +132,23 @@ public class Mediator implements IMediator {
 	@Override
 	public String getUserName() {
 		return config.getUsername();
+	}
+
+	@Override
+	public ArrayList<String> getUserFiles(String name) {
+		Enumeration<UserFiles> uf_enum = uf.elements();
+		while (uf_enum.hasMoreElements()) {
+			UserFiles entry = uf_enum.nextElement();
+			if (entry.getName().equals(name)) {
+				return entry.getFiles();
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void displayMessage(String message) {
+		sb.displayMessage(message);
+		
 	}
 }

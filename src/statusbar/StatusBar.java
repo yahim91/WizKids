@@ -32,4 +32,8 @@ public class StatusBar {
 		else
 			label.setText("Currently downloading " + (started - finished) + "/" + started + " files..");
 	}
+	
+	public void displayMessage(String msg) {
+		label.setText(msg);
+	}
 }
