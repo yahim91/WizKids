@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 
 import network.Network;
+import network.WebServerClient;
 import statusbar.StatusBar;
 import table.ProgressTableModel;
 import table.RowData;
@@ -14,6 +15,7 @@ public interface IMediator {
 	public void registerProgressTableModel(ProgressTableModel tm);
 	public void registerStatusBar(StatusBar sb);
 	public void registerUserListModel(DefaultListModel<UserFiles> uf);
+	public void registerWebClient(WebServerClient s);
 	public void considerUser(UserFiles uf);
 	public void registerFilesModel(DefaultListModel<String> files);
 	public void registerNetwork(Network network);
@@ -26,4 +28,5 @@ public interface IMediator {
 	public void updateUserFiles(String name, ArrayList<String> files);
 	public ArrayList<String> getUserFiles(String name);
 	public void displayMessage(String message);
+	public void publishUser();
 }

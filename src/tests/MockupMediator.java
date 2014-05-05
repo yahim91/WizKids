@@ -10,6 +10,7 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 
 import network.Network;
+import network.WebServerClient;
 import statusbar.StatusBar;
 import table.ProgressTableModel;
 import table.RowData;
@@ -141,6 +142,18 @@ public class MockupMediator implements IMediator {
 
 	@Override
 	public void displayMessage(String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void registerWebClient(WebServerClient s) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void publishUser() {
 		// TODO Auto-generated method stub
 		
 	}

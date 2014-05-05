@@ -10,6 +10,7 @@ import javax.swing.DefaultListModel;
 import org.apache.log4j.Logger;
 
 import network.Network;
+import network.WebServerClient;
 import statusbar.StatusBar;
 import table.FileDownloaderWorker;
 import table.ProgressTableModel;
@@ -23,6 +24,7 @@ public class Mediator implements IMediator {
 	private StatusBar sb;
 	private Network network;
 	private Config config;
+	private WebServerClient webServerClient;
 
 	public Mediator(String username) {
 	}
@@ -149,6 +151,16 @@ public class Mediator implements IMediator {
 	@Override
 	public void displayMessage(String message) {
 		sb.displayMessage(message);
+	}
+
+	@Override
+	public void registerWebClient(WebServerClient s) {
+		this.webServerClient = s;
+	}
+
+	@Override
+	public void publishUser() {
+		this.webServerClient.publishUser();
 		
 	}
 }

@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import network.Network;
+import network.WebServerClient;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -38,6 +39,8 @@ public class Main extends JFrame {
 	private static Network network = null;
 	private static Config config;
 	private static Logger logger;
+
+	private static WebServerClient webServerClient;
 	private final IMediator med;
 
 	public Main(final IMediator med) {
@@ -46,6 +49,7 @@ public class Main extends JFrame {
 
 		// init mediator
 		this.med = med;
+		med.publishUser();
 
 		// init frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // exit application
@@ -99,7 +103,6 @@ public class Main extends JFrame {
 		jfiles.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				// TODO Auto-generated method stub
 				if (e.getValueIsAdjusting()) {
 					int indexF = jfiles.getSelectedIndex();
 					int indexU = jusers.getSelectedIndex();
@@ -136,9 +139,12 @@ public class Main extends JFrame {
 		final String username = argv[0];
 		final IMediator mediator = new Mediator(username);
 		network = new Network("users_folder/" + username, mediator);
+		webServerClient = new WebServerClient(mediator);
 		config = new Config(username, mediator);
 		mediator.registerConfig(config);
 		mediator.registerNetwork(network);
+		mediator.registerWebClient(webServerClient);
+		
 		
 		logger = Logger.getLogger(Main.class);
 		PropertyConfigurator.configure(config.getLogFileName());
