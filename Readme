@@ -36,3 +36,23 @@ fisiere. La client starile sunt retinute in FileDownloaderWorker care face recep
 Alte resurse:
 La compilare se deschid 3 instante la delay de 3s. Exista 3 useri: bugs, duffy si sam, iar fiecare are 3 fisiere. 
 
+
+Tema 3 IDP
+
+Pentru tema 3 am implementat un Servlet Web care proceseaza cereri de la client. Acesta proceseaza cereri de tipul:
+	: request users - trimite lista de user catre client
+	: request user files - trimite lista de fisiere a unui client
+	: remove user - sterge un utilizator din lista
+	: update user files - updateaza fisierele unui client
+Serverul Web retine informatii despre utilizatori precum adresa, portul si fisierele sale. El primeste request-uri de
+tip post de la client acestea fiind mai secure decat cele get;
+
+
+Clientul va trimite la initializare un mesaj de tip post cu numele sau si fisierele pe care le share-uieste cu ceilalti.
+Acesta poate updata lista sa de clienti folosind butonul de refresh.
+
+De asemenea acesta face request de fiecare data cand selecteaza un utilizator, pentru a primi lista de fisiere updatata.
+Clientul trimite o cerere de stergere a propriului utilizator atunci cand inchide aplicatia, pentru ca ceilalti clienti
+sa fie notificati de deconectarea unui utilizator.
+
+	
