@@ -2,11 +2,14 @@ package app;
 
 import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -38,6 +41,7 @@ public class Main extends JFrame {
 	private final JList<UserFiles> jusers;
 	private final JTable jt;
 	private final JLabel statusLabel;
+	private final JButton refreshB;
 	private static Network network = null;
 	private static Config config;
 	private static Logger logger;
@@ -57,6 +61,10 @@ public class Main extends JFrame {
 		// application
 		// when window
 		// is closed
+		
+		refreshB = new JButton();
+		refreshB.setText("refresh users");
+		
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
 			@Override
@@ -95,24 +103,35 @@ public class Main extends JFrame {
 		LayoutManager layout = new BoxLayout(ts, BoxLayout.Y_AXIS);
 		ts.setLayout(layout);
 		ts.add(new JScrollPane(jt));
-		ts.add(new JScrollPane(statusLabel));
+		//ts.add(new JScrollPane(statusLabel));
+		ts.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				refreshB, statusLabel));
 
 		// init user list
 		DefaultListModel<UserFiles> uf = new DefaultListModel<UserFiles>();
 		med.registerUserListModel(uf);
 
+		//TODO :buton
+		// 
+		
 		jusers = new JList<UserFiles>(uf);
 		jusers.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				// TODO Auto-generated method stub
 				if (e.getValueIsAdjusting()) {
-					int index = jusers.getSelectedIndex();
 					med.considerUser(jusers.getSelectedValue());
 				}
 			}
 		});
 
+		refreshB.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				med.updateUsers();
+			}
+		});
+		
 		// init files list, for current selected user
 		DefaultListModel<String> files = new DefaultListModel<String>();
 		med.registerFilesModel(files);

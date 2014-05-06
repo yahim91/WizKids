@@ -72,22 +72,26 @@ public class Config {
 		return address;
 	}
 	
-	public void getFiles() {
-		
+	public ArrayList<String> getInitFiles() {
+		ArrayList<String> files = new ArrayList<String>();
 		try {
 			BufferedReader buffer = new BufferedReader(new FileReader(sharedDocFile));
-			ArrayList<String> files = new ArrayList<String>();
 			String file = "";
 			while((file = buffer.readLine()) != null) {
 				files.add(file);
 			}
-			mediator.addUser(username, files, address, port);
 			buffer.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		return files;
+	}
+	
+	public void addOwnUserToGUI(ArrayList<String> files) {
+		mediator.addUser(username, files, address, port);		
 	}
 
 	public String getLogFileName() {

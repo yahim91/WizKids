@@ -188,6 +188,25 @@ public class MockupMediator implements IMediator {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void sendUpdateFiles() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateUsersList(ArrayList<String> names,
+			ArrayList<Integer> ports, ArrayList<String> addresses) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addNewOwnFile(String fileName) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 }

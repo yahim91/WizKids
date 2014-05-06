@@ -25,10 +25,16 @@ public class Mediator implements IMediator {
 	private Network network;
 	private Config config;
 	private WebServerClient webServerClient;
-
+	private ArrayList<String> ownFileNames;
+	
 	public Mediator(String username) {
 	}
 
+	@Override
+	public void addNewOwnFile(String fileName) {
+		ownFileNames.add(fileName);
+	}
+	
 	@Override
 	public void registerStatusBar(StatusBar sb) {
 		this.sb = sb;
@@ -45,7 +51,7 @@ public class Mediator implements IMediator {
 
 	public void registerFilesModel(DefaultListModel<String> files) {
 		this.files = files;
-		config.getFiles();
+		this.ownFileNames = config.getInitFiles();
 	}
 
 	public void considerUser(UserFiles uf) {
@@ -73,9 +79,6 @@ public class Mediator implements IMediator {
 
 		tm.addRow(new RowData(user.getName(), config.getUsername(), fileName));
 		final int index = tm.getRowCount() - 1;
-		System.out.println("Try to download: " + user.getAddress() + " "
-				+ user.getListeningPort() + " " + fileName + " "
-				+ config.getUsername());
 		FileDownloaderWorker fileDownloader = new FileDownloaderWorker(
 				user.getAddress(), user.getListeningPort(), fileName,
 				config.getUsername(), this, index);
@@ -95,7 +98,25 @@ public class Mediator implements IMediator {
 	@Override
 	public void addUser(String name, ArrayList<String> files, String address,
 			Integer port) {
+		/*
+		 * Boolean found = false; Enumeration<UserFiles> uf_enum =
+		 * uf.elements(); while (uf_enum.hasMoreElements()) { UserFiles entry =
+		 * uf_enum.nextElement(); if (entry.getName().equals(name)) { found =
+		 * true; break; } } if (!found)
+		 */
 		uf.addElement(new UserFiles(name, files, port, address, this));
+	}
+
+	@Override
+	public void updateUsersList(ArrayList<String> names,
+			ArrayList<Integer> ports, ArrayList<String> addresses) {
+		uf.clear();
+		
+		config.addOwnUserToGUI(ownFileNames);
+		
+		for (int i = 0; i < names.size(); ++i) {
+			addUser(names.get(i), new ArrayList<String>(), addresses.get(i), ports.get(i));
+		}
 	}
 
 	@Override
@@ -171,12 +192,13 @@ public class Mediator implements IMediator {
 	@Override
 	public void publishUser() {
 		this.webServerClient.publishUser();
+		config.addOwnUserToGUI(ownFileNames);
 		considerUser(uf.get(0));
 	}
 
 	@Override
 	public String getOwnFiles() {
-		ArrayList<String> files = getUserFiles(config.getUsername());
+		ArrayList<String> files = ownFileNames;
 		String fileString = "";
 		for (String file : files) {
 			fileString += "file=" + file + "&";
@@ -197,7 +219,6 @@ public class Mediator implements IMediator {
 	@Override
 	public void updateUsers() {
 		this.webServerClient.updateUsers();
-
 	}
 
 	@Override

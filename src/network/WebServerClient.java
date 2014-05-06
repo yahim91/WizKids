@@ -81,14 +81,18 @@ public class WebServerClient {
 				return;
 			}
 			String[] up = users.split("&");
+			ArrayList<String> names = new ArrayList<String>();
+			ArrayList<Integer> ports = new ArrayList<Integer>();
+			ArrayList<String> addresses = new ArrayList<String>();
 			for (String u : up) {
 				String username = u.split(":")[0];
 				Integer port = Integer.valueOf(u.split(":")[1]);
 				String address = u.split(":")[2];
-				System.out.println(username + " " + port + " " + address);
-				mediator.addUser(username, new ArrayList<String>(), address, port);
+				names.add(username);
+				ports.add(port);
+				addresses.add(address);
 			}
-
+			mediator.updateUsersList(names, ports, addresses);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
