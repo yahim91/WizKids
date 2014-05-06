@@ -219,7 +219,8 @@ public class FileDownloaderWorker extends SwingWorker<Boolean, String> {
 		else {
 			if (bytes_received == size && !status.equals(ERROR_RECEIVING)) {
 				logger.info("Receiving complete!");
-				mediator.getUserFiles(userName).add(fileName);
+				mediator.getUserFiles(mediator.getUserName()).add(fileName);
+				mediator.sendUpdateFiles();
 			} else {
 				logger.info("Receiving failed!");
 				mediator.getTableModel().updateMessage(index, "Error");

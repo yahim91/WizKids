@@ -51,6 +51,7 @@ public class Network {
 
 			serverSocketChannel = ServerSocketChannel.open();
 			serverSocketChannel.configureBlocking(false);
+			System.out.println("Lissten for potential clients on: " + IP + " " + port);
 			serverSocketChannel.socket().bind(new InetSocketAddress(IP, port));
 			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
@@ -125,9 +126,8 @@ public class Network {
 
 		socketChannel.configureBlocking(false);
 		socketChannel.register(key.selector(), SelectionKey.OP_READ, fileInfo);
+		
 		logger.info("New connection accepted from " + socketChannel.socket().getRemoteSocketAddress() + "!");
-
-
 	}
 
 }

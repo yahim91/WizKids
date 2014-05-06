@@ -2,12 +2,15 @@ package app;
 
 import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -22,7 +25,6 @@ import network.WebServerClient;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.RollingFileAppender;
 
 import statusbar.StatusBar;
 import table.ProgressCellRender;
@@ -49,12 +51,27 @@ public class Main extends JFrame {
 
 		// init mediator
 		this.med = med;
-		med.publishUser();
 
 		// init frame
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // exit application
-																// when window
-																// is closed
+		// this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // exit
+		// application
+		// when window
+		// is closed
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				int confirm = JOptionPane.showOptionDialog(null,
+						"Are You Sure to Close Application?",
+						"Exit Confirmation", JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, null, null);
+
+				if (confirm == 0) {
+					med.unpublishUser();
+					System.exit(0);
+				}
+			}
+		});
 		this.setVisible(true); // show it
 		this.setSize(new Dimension(800, 600));
 		this.setLocationRelativeTo(null); // center it
@@ -129,6 +146,9 @@ public class Main extends JFrame {
 
 		// add everything to frame
 		this.getContentPane().add(splitPane);
+
+		med.publishUser();
+		med.updateUsers();
 	}
 
 	public IMediator getMediator() {
@@ -144,8 +164,7 @@ public class Main extends JFrame {
 		mediator.registerConfig(config);
 		mediator.registerNetwork(network);
 		mediator.registerWebClient(webServerClient);
-		
-		
+
 		logger = Logger.getLogger(Main.class);
 		PropertyConfigurator.configure(config.getLogFileName());
 

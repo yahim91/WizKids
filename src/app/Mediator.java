@@ -49,9 +49,16 @@ public class Mediator implements IMediator {
 	}
 
 	public void considerUser(UserFiles uf) {
-		ArrayList<String> files_i = uf.getFiles();
-		files.removeAllElements();
+		ArrayList<String> files_i;
 
+		if (uf.getName().equals(config.getUsername())) {
+			files_i = uf.getFiles();
+		} else {
+			files_i = this.webServerClient.requestFiles(uf.getName());
+			uf.updateFiles(files_i);
+		}
+
+		files.removeAllElements();
 		for (String fl : files_i)
 			files.addElement(fl);
 	}
@@ -66,14 +73,18 @@ public class Mediator implements IMediator {
 
 		tm.addRow(new RowData(user.getName(), config.getUsername(), fileName));
 		final int index = tm.getRowCount() - 1;
+		System.out.println("Try to download: " + user.getAddress() + " "
+				+ user.getListeningPort() + " " + fileName + " "
+				+ config.getUsername());
 		FileDownloaderWorker fileDownloader = new FileDownloaderWorker(
-				user.getAddress(), user.getListeningPort(), fileName, config.getUsername(), this, index);
+				user.getAddress(), user.getListeningPort(), fileName,
+				config.getUsername(), this, index);
 		fileDownloader.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals("progress")) {
-					tm.updateStatus(index, (Integer)evt.getNewValue());
-					if ((Integer)evt.getNewValue() == 100) // download complete
+					tm.updateStatus(index, (Integer) evt.getNewValue());
+					if ((Integer) evt.getNewValue() == 100) // download complete
 						sb.incFinished();
 				}
 			}
@@ -81,11 +92,10 @@ public class Mediator implements IMediator {
 		fileDownloader.execute();
 	}
 
-	
 	@Override
-	public void addUser(String name, ArrayList<String> files) {
-		uf.addElement(new UserFiles(name, files, this));
-		considerUser(uf.get(0));
+	public void addUser(String name, ArrayList<String> files, String address,
+			Integer port) {
+		uf.addElement(new UserFiles(name, files, port, address, this));
 	}
 
 	@Override
@@ -161,6 +171,42 @@ public class Mediator implements IMediator {
 	@Override
 	public void publishUser() {
 		this.webServerClient.publishUser();
-		
+		considerUser(uf.get(0));
+	}
+
+	@Override
+	public String getOwnFiles() {
+		ArrayList<String> files = getUserFiles(config.getUsername());
+		String fileString = "";
+		for (String file : files) {
+			fileString += "file=" + file + "&";
+		}
+		return fileString;
+	}
+
+	@Override
+	public void unpublishUser() {
+		this.webServerClient.unpublishUser();
+	}
+
+	@Override
+	public Integer getPort() {
+		return config.getPort();
+	}
+
+	@Override
+	public void updateUsers() {
+		this.webServerClient.updateUsers();
+
+	}
+
+	@Override
+	public String getAddress() {
+		return config.getAddress();
+	}
+
+	@Override
+	public void sendUpdateFiles() {
+		this.webServerClient.sendUpdateFiles();
 	}
 }

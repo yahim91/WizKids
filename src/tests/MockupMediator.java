@@ -89,10 +89,10 @@ public class MockupMediator implements IMediator {
 	}
 
 	@Override
-	public void addUser(String name, ArrayList<String> files) {
-		UserFiles new_entry = new UserFiles(name, files, this);
+	public void addUser(String name, ArrayList<String> files, String address, Integer port) {
+		/*UserFiles new_entry = new UserFiles(name, files, this);
 		new_entry.setId(userid++);
-		uf.addElement(new_entry);
+		uf.addElement(new_entry);*/
 	}
 	
 	@Override
@@ -154,6 +154,37 @@ public class MockupMediator implements IMediator {
 
 	@Override
 	public void publishUser() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unpublishUser() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getOwnFiles() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public Integer getPort() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void updateUsers() {
 		// TODO Auto-generated method stub
 		
 	}

@@ -23,10 +23,16 @@ public interface IMediator {
 	public void considerFile(int indexU, int indexF);
 	public ProgressTableModel getTableModel();
 	public String getUserName();
-	public void addUser(String name, ArrayList<String> files);
+	public void addUser(String name, ArrayList<String> files, String address, Integer port);
 	public void updateUserInfo(String name, Integer port, String address);
 	public void updateUserFiles(String name, ArrayList<String> files);
 	public ArrayList<String> getUserFiles(String name);
 	public void displayMessage(String message);
 	public void publishUser();
+	public void unpublishUser();
+	public String getOwnFiles();
+	public Integer getPort();
+	public String getAddress();
+	public void updateUsers();
+	public void sendUpdateFiles();
 }

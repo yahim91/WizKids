@@ -9,10 +9,12 @@ public class UserFiles {
 	private Integer listeningPort;
 	private IMediator mediator;
 	
-	public UserFiles(String userName, ArrayList<String> files, IMediator med) {
+	public UserFiles(String userName, ArrayList<String> files, Integer port, String address, IMediator med) {
 		this.userName = userName;
 		this.files = files;
 		this.mediator = med;
+		this.listeningPort = port;
+		this.address = address;
 	}
 	
 	public void setId(Integer id) {
@@ -39,7 +41,7 @@ public class UserFiles {
 	public void updateFiles(ArrayList<String> files) {
 		this.files.clear();
 		this.files.addAll(files);
-		this.mediator.considerUser(this);
+		//this.mediator.considerUser(this);
 	}
 
 	public String getAddress() {

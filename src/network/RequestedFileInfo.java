@@ -107,12 +107,12 @@ public class RequestedFileInfo {
 						(int) (bytes_read * 100 / fileSize));
 				key.interestOps(SelectionKey.OP_READ);
 				state = RECEIVING_ACK;
+				System.out.println(rqUserName + " " + fileName);
 				if (fileSize == bytes_read) {
 					socketChannel.close();
 					fc.close();
 					raf.close();
 					state = SENDING_COMPLETE;
-					network.mediator.getUserFiles(rqUserName).add(fileName);
 				}
 			} else {
 				state = SENDING_COMPLETE;

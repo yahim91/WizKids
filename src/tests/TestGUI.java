@@ -24,17 +24,17 @@ public class TestGUI {
 							main.getMediator().addUser(
 									"gigix1",
 									new ArrayList<String>(Arrays.asList("ana1",
-											"are1", "mere2")));
+											"are1", "mere2")), "localhost", 9999);
 							Thread.sleep(5000);
 							main.getMediator().addUser(
 									"gigix2",
 									new ArrayList<String>(Arrays.asList("ana2",
-											"are2", "mere2")));
+											"are2", "mere2")),  "localhost", 8888);
 							Thread.sleep(5000);
 							main.getMediator().addUser(
 									"gigix3",
 									new ArrayList<String>(Arrays.asList("ana3",
-											"are3", "mere3")));
+											"are3", "mere3")),  "localhost", 7777);
 						} catch (InterruptedException e) {
 						}
 					}
